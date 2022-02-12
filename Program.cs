@@ -22,8 +22,6 @@ namespace _2021
 
             mapParams.DefaultTimeForLight = int.Parse(args[1]);
 
-
-
             foreach (var cross in crosses)
             {
                 foreach (var light in cross.Value.In)
@@ -34,9 +32,24 @@ namespace _2021
 
             // Generating output file
             var outputLines = new List<string>();
-            var nonRedLightsCount = crosses.SelectMany(x => x.Value.In).Count(x => x.Time != 0);
+            var greenCrosses = crosses.Where(x => x.Value.In.Any(x => x.Time != 0));
 
-            outputLines.Add(nonRedLightsCount.ToString());
+
+            outputLines.Add(greenCrosses.Count().ToString());
+
+            foreach (var cross in greenCrosses)
+            {
+                outputLines.Add(cross.Key.ToString());
+
+                var greenLights = cross.Value.In.Where(x => x.Time != 0);
+                outputLines.Add(greenLights.Count().ToString());
+
+                foreach (var light in greenLights)
+                {
+                    var str = light.Street.Name + " " + light.Time.ToString();
+                    outputLines.Add(str);
+                }
+            }
 
             File.WriteAllLinesAsync(args[0]+"-out.txt", outputLines);
         }

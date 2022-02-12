@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace _2021
@@ -7,13 +9,50 @@ namespace _2021
     {
         static void Main(string[] args)
         {
+            ProblemParams mapParams;
+            Dictionary<string, Street> streets;
+            Dictionary<int, CarPath> carPaths;
+            Dictionary<int, Cross> crosses;
+            Parse(
+                args,
+                out mapParams,
+                out streets,
+                out carPaths,
+                out crosses);
+
+            mapParams.DefaultTimeForLight = int.Parse(args[1]);
+
+
+
+            foreach (var cross in crosses)
+            {
+                foreach (var light in cross.Value.In)
+                {
+                    light.Time = mapParams.DefaultTimeForLight;
+                }
+            }
+
+            // Generating output file
+            var outputLines = new List<string>();
+            var nonRedLightsCount = crosses.SelectMany(x => x.Value.In).Count(x => x.Time != 0);
+
+            outputLines.Add(nonRedLightsCount.ToString());
+
+            File.WriteAllLinesAsync(args[0]+"-out.txt", outputLines);
+        }
+
+        private static void Parse(string[] args,
+                                  out ProblemParams mapParams,
+                                  out Dictionary<string, Street> streets,
+                                  out Dictionary<int, CarPath> carPaths,
+                                  out Dictionary<int, Cross> crosses)
+        {
             var filename = args[0];
             string[] lines = System.IO.File.ReadAllLines(filename);
 
             var mapParamRaw = lines[0].Split(" ").Select(x => Int16.Parse(x)).ToList();
 
-
-            var mapParams = new ProblemParams
+            mapParams = new ProblemParams
             {
                 AllTime = mapParamRaw[0],
                 IntersecCount = mapParamRaw[1],
@@ -22,7 +61,7 @@ namespace _2021
                 Bonus = mapParamRaw[4]
             };
 
-            var streets = lines.Skip(1).Take(mapParams.StreetCount).Select(x =>
+            streets = lines.Skip(1).Take(mapParams.StreetCount).Select(x =>
             {
                 var raw = x.Split(" ");
                 return new Street
@@ -34,22 +73,47 @@ namespace _2021
                 };
             }).ToDictionary(x => x.Name);
 
-            var carPaths = lines.Skip(1 + mapParams.StreetCount)
+            carPaths = lines.Skip(1 + mapParams.StreetCount)
                                .Take(mapParams.CarCount)
-                               .Select((x,i) =>
+                               .Select((x, i) =>
                                {
                                    var raw = x.Split(" ");
 
                                    return new CarPath
                                    {
-                                       CarId = i+1,
+                                       CarId = i + 1,
                                        Path = raw.Skip(1).ToList(),
                                        PathLength = raw[0]
                                    };
                                })
-                               .ToDictionary(x=>x.CarId);
+                               .ToDictionary(x => x.CarId);
 
-            Console.WriteLine(carPaths[2].Path[2]);
+            crosses = new Dictionary<int, Cross>();
+            foreach (var item in streets)
+            {
+                if (!crosses.TryGetValue(item.Value.End, out Cross value))
+                {
+                    crosses[item.Value.End] = new Cross
+                    {
+                        Id = item.Value.End,
+                        In = new HashSet<Light>
+                        {
+                            new Light{
+                                Street = item.Value,
+                                Time = 0
+                            }
+                        }
+                    };
+
+                    continue;
+                }
+
+                value.In.Add(new Light
+                {
+                    Street = item.Value,
+                    Time = 0
+                });
+            }
         }
     }
 }

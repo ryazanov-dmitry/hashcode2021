@@ -7,5 +7,6 @@ namespace _2021
         public short StreetCount { get; internal set; }
         public short CarCount { get; internal set; }
         public short Bonus { get; internal set; }
+        public int DefaultTimeForLight { get; internal set; }
     }
 }

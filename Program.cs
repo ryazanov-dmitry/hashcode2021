@@ -42,6 +42,7 @@ namespace _2021
                 outputLines.Add(cross.Key.ToString());
 
                 var greenLights = cross.Value.In.Where(x => x.Time != 0);
+
                 outputLines.Add(greenLights.Count().ToString());
 
                 foreach (var light in greenLights)
@@ -50,8 +51,8 @@ namespace _2021
                     outputLines.Add(str);
                 }
             }
-
-            File.WriteAllLinesAsync(args[0]+"-out.txt", outputLines);
+            Console.WriteLine(outputLines.Count().ToString());
+            File.WriteAllLines(args[0]+".out.txt", outputLines);
         }
 
         private static void Parse(string[] args,
@@ -63,7 +64,7 @@ namespace _2021
             var filename = args[0];
             string[] lines = System.IO.File.ReadAllLines(filename);
 
-            var mapParamRaw = lines[0].Split(" ").Select(x => Int16.Parse(x)).ToList();
+            var mapParamRaw = lines[0].Split(" ").Select(x => int.Parse(x)).ToList();
 
             mapParams = new ProblemParams
             {

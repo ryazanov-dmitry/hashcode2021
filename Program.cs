@@ -32,10 +32,24 @@ namespace _2021
                     Name = raw[2],
                     Time = int.Parse(raw[3])
                 };
-            }).ToDictionary(x=>x.Name);
+            }).ToDictionary(x => x.Name);
 
+            var carPaths = lines.Skip(1 + mapParams.StreetCount)
+                               .Take(mapParams.CarCount)
+                               .Select((x,i) =>
+                               {
+                                   var raw = x.Split(" ");
 
-            Console.WriteLine(streets["rue-de-rome"].Time);
+                                   return new CarPath
+                                   {
+                                       CarId = i+1,
+                                       Path = raw.Skip(1).ToList(),
+                                       PathLength = raw[0]
+                                   };
+                               })
+                               .ToDictionary(x=>x.CarId);
+
+            Console.WriteLine(carPaths[2].Path[2]);
         }
     }
 }
